@@ -40,6 +40,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         variableValues: req.body.variables,
         contextValue: {
           db: prisma,
+          dataloaders: new Map(),
         }
       });
       // console.log(response);

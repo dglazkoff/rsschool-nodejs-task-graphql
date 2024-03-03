@@ -2,6 +2,7 @@ import {GraphQLBoolean, GraphQLInputObjectType, GraphQLInt, GraphQLNonNull, Grap
 import {UUIDType} from "./uuid.js";
 import {Context, memberTypeId} from "./common.js";
 import {memberType} from "./memberType.js";
+import DataLoader from "dataloader";
 
 export const profile = new GraphQLObjectType<{ memberTypeId: string }, Context>({
     name: "Profile",
@@ -12,11 +13,19 @@ export const profile = new GraphQLObjectType<{ memberTypeId: string }, Context>(
         memberType: {
             type: memberType,
             resolve: async (profile, args, context) => {
-                return context.db.memberType.findUnique({
-                    where: {
-                        id: profile.memberTypeId,
-                    },
-                });
+                const { dataloaders } = context;
+                let dl = dataloaders.get('memberTypes');
+
+                if (!dl) {
+                    dl = new DataLoader(async (ids  ) => {
+                        const memberTypes = await context.db.memberType.findMany();
+
+                        return ids.map(id => memberTypes.find(x => x.id === id));
+                    });
+                    dataloaders.set('memberTypes', dl);
+                }
+
+                return dl.load(profile.memberTypeId);
             }
         },
     },

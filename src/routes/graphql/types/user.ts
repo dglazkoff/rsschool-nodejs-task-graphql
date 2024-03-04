@@ -25,7 +25,7 @@ export const user: GraphQLObjectType = new GraphQLObjectType<{ id: string }, Con
                 let dl = dataloaders.get(`profiles`);
 
                 if (!dl) {
-                    dl = new DataLoader(async (userIds: readonly string[]  ) => {
+                    dl = new DataLoader(async (userIds: readonly string[]) => {
                         const profiles = await context.db.profile.findMany({
                             where: {
                                 userId: {
